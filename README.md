@@ -27,15 +27,21 @@ docker-compose up -d
 ./examples/docker_run_examples.sh basic
 ```
 
-**If you encounter build issues (libcurl errors)**, use the simplified build:
+**If you encounter build issues**, try these alternatives in order:
 
 ```bash
-# Alternative: Use simplified Docker setup
+# Option 1: Simplified build (removes multi-stage complexity)
 docker-compose -f docker-compose.simple.yml up -d
 
-# Or use Makefile
-make build-simple
-make up-simple
+# Option 2: Minimal build (essential extensions only)
+docker-compose -f docker-compose.minimal.yml up -d
+
+# Or use Makefile shortcuts
+make build-simple && make up-simple
+make build-minimal && make up-minimal
+
+# Or run the build test to find what works
+./docker-test.sh
 ```
 
 ## Requirements
@@ -332,20 +338,30 @@ mt5-manager-api/
 
 ### Docker Build Issues
 
-**libcurl error (Package requirements not met):**
-If you encounter curl/libcurl build errors, use the simplified Dockerfile:
+**PHP extension errors (json, curl, etc.):**
+Try the builds in this order until one works:
+
 ```bash
-# Use simplified build
-docker-compose -f docker-compose.simple.yml build
+# 1. Simplified build (removes multi-stage complexity)
 docker-compose -f docker-compose.simple.yml up -d
+
+# 2. Minimal build (only essential extensions)
+docker-compose -f docker-compose.minimal.yml up -d
+
+# 3. Automatic testing (finds what works)
+./docker-test.sh
 ```
 
-**Multi-stage build issues:**
-Some Docker environments have issues with multi-stage builds. The simplified version avoids this:
+**Specific error fixes:**
+- **json extension error**: Fixed - json is built into PHP 8.1+
+- **libcurl error**: Use minimal build - includes libcurl4-openssl-dev
+- **Multi-stage build issues**: Use simple or minimal builds
+
+**Manual build testing:**
 ```bash
-# Alternative: Build with simple Dockerfile directly
-docker build -f Dockerfile.simple -t mt5-manager-api .
-docker run -p 8080:80 mt5-manager-api
+# Test minimal build directly
+docker build -f Dockerfile.minimal -t mt5-test .
+docker run -p 8080:80 mt5-test
 ```
 
 ### Docker Runtime Issues

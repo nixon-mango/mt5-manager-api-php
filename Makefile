@@ -18,6 +18,10 @@ build-simple: ## Build with simplified Dockerfile (for build issues)
 	@echo "Building with simplified Dockerfile..."
 	docker-compose -f docker-compose.simple.yml build
 
+build-minimal: ## Build with minimal Dockerfile (essential extensions only)
+	@echo "Building with minimal Dockerfile..."
+	docker-compose -f docker-compose.minimal.yml build
+
 up: ## Start containers in detached mode
 	@echo "Starting containers..."
 	docker-compose up -d
@@ -26,6 +30,11 @@ up: ## Start containers in detached mode
 up-simple: ## Start with simplified build (for build issues)
 	@echo "Starting containers with simplified build..."
 	docker-compose -f docker-compose.simple.yml up -d
+	@echo "Containers started! Visit http://localhost:8080"
+
+up-minimal: ## Start with minimal build (essential extensions only)
+	@echo "Starting containers with minimal build..."
+	docker-compose -f docker-compose.minimal.yml up -d
 	@echo "Containers started! Visit http://localhost:8080"
 
 up-dev: ## Start development containers with Xdebug

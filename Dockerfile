@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure zip \
     && docker-php-ext-install \
         curl \
-        json \
         mbstring \
         zip \
         gd \

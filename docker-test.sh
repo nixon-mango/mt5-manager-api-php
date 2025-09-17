@@ -77,7 +77,14 @@ fi
 
 echo ""
 
-# Test 3: Direct simple build
+# Test 3: Minimal build
+if test_build "Dockerfile.minimal" "docker-compose.minimal.yml" "Minimal build (essential extensions only)"; then
+    WORKING_BUILD="docker-compose.minimal.yml"
+fi
+
+echo ""
+
+# Test 4: Direct simple build
 if test_build "Dockerfile.simple" "" "Direct simple build"; then
     WORKING_BUILD="Dockerfile.simple"
 fi

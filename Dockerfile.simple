@@ -20,8 +20,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions one by one for better error handling
+# Note: json is built into PHP 8.1+ and doesn't need separate installation
 RUN docker-php-ext-install curl
-RUN docker-php-ext-install json
 RUN docker-php-ext-install mbstring
 RUN docker-php-ext-configure zip && docker-php-ext-install zip
 RUN docker-php-ext-install gd
