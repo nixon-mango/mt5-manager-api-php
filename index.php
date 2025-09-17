@@ -216,11 +216,12 @@ $config->setAccessToken($token);<br>
         
         <h2>📖 Documentation</h2>
         
-        <p>Complete API documentation is available in the <a href="docs/">docs/</a> directory:</p>
+        <p>Complete API documentation is available in multiple formats:</p>
         <ul>
-            <li><a href="docs/Api/">API Endpoints</a> - All available API methods</li>
-            <li><a href="docs/Model/">Data Models</a> - Request/response object structures</li>
-            <li><a href="examples/README.md">Examples Documentation</a> - Detailed example usage</li>
+            <li><a href="api-docs.php">📚 API Endpoints</a> - All available API methods (formatted)</li>
+            <li><a href="model-docs.php">📊 Data Models</a> - Request/response object structures (formatted)</li>
+            <li><a href="docs-browser.php">📁 Raw Documentation</a> - Browse original markdown files</li>
+            <li><a href="examples/README.md">📖 Examples Documentation</a> - Detailed example usage</li>
         </ul>
         
         <h2>🔗 Useful Links</h2>
