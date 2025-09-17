@@ -84,7 +84,14 @@ fi
 
 echo ""
 
-# Test 4: Direct simple build
+# Test 4: Ultra-minimal build (curl + zip only)
+if test_build "Dockerfile.ultra" "docker-compose.ultra.yml" "Ultra-minimal build (curl + zip only)"; then
+    WORKING_BUILD="docker-compose.ultra.yml"
+fi
+
+echo ""
+
+# Test 5: Direct simple build
 if test_build "Dockerfile.simple" "" "Direct simple build"; then
     WORKING_BUILD="Dockerfile.simple"
 fi

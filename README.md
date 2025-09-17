@@ -36,11 +36,15 @@ docker-compose -f docker-compose.simple.yml up -d
 # Option 2: Minimal build (essential extensions only)
 docker-compose -f docker-compose.minimal.yml up -d
 
-# Or use Makefile shortcuts
-make build-simple && make up-simple
-make build-minimal && make up-minimal
+# Option 3: Ultra-minimal build (curl + zip only, no mbstring)
+docker-compose -f docker-compose.ultra.yml up -d
 
-# Or run the build test to find what works
+# Or use Makefile shortcuts
+make up-simple    # Simplified build
+make up-minimal   # Minimal build  
+make up-ultra     # Ultra-minimal build
+
+# Or run the build test to find what works automatically
 ./docker-test.sh
 ```
 
@@ -338,30 +342,40 @@ mt5-manager-api/
 
 ### Docker Build Issues
 
-**PHP extension errors (json, curl, etc.):**
+**PHP extension errors (json, curl, mbstring, etc.):**
 Try the builds in this order until one works:
 
 ```bash
 # 1. Simplified build (removes multi-stage complexity)
 docker-compose -f docker-compose.simple.yml up -d
 
-# 2. Minimal build (only essential extensions)
+# 2. Minimal build (curl + zip + mbstring)
 docker-compose -f docker-compose.minimal.yml up -d
 
-# 3. Automatic testing (finds what works)
+# 3. Ultra-minimal build (curl + zip only)
+docker-compose -f docker-compose.ultra.yml up -d
+
+# 4. Automatic testing (finds what works)
 ./docker-test.sh
 ```
 
 **Specific error fixes:**
 - **json extension error**: Fixed - json is built into PHP 8.1+
-- **libcurl error**: Use minimal build - includes libcurl4-openssl-dev
-- **Multi-stage build issues**: Use simple or minimal builds
+- **mbstring/oniguruma error**: Fixed in minimal build with libonig-dev
+- **libcurl error**: All builds include libcurl4-openssl-dev
+- **Multi-stage build issues**: Use simple, minimal, or ultra builds
 
 **Manual build testing:**
 ```bash
-# Test minimal build directly
-docker build -f Dockerfile.minimal -t mt5-test .
-docker run -p 8080:80 mt5-test
+# Test different builds directly
+docker build -f Dockerfile.simple -t mt5-simple .
+docker build -f Dockerfile.minimal -t mt5-minimal .
+docker build -f Dockerfile.ultra -t mt5-ultra .
+
+# Run the one that built successfully
+docker run -p 8080:80 mt5-ultra    # Most likely to work
+docker run -p 8080:80 mt5-minimal
+docker run -p 8080:80 mt5-simple
 ```
 
 ### Docker Runtime Issues

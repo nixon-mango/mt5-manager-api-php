@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mt5-sdk:
+    build:
+      context: .
+      dockerfile: Dockerfile.ultra
+    container_name: mt5-manager-api-ultra
+    ports:
+      - "8080:80"
+    environment:
+      - MT5_API_HOST=${MT5_API_HOST:-localhost}
+      - MT5_API_PORT=${MT5_API_PORT:-8080}
+      - MT5_API_USERNAME=${MT5_API_USERNAME:-}
+      - MT5_API_PASSWORD=${MT5_API_PASSWORD:-}
+    volumes:
+      - ./examples:/var/www/html/examples:ro
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

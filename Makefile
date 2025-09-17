@@ -22,6 +22,10 @@ build-minimal: ## Build with minimal Dockerfile (essential extensions only)
 	@echo "Building with minimal Dockerfile..."
 	docker-compose -f docker-compose.minimal.yml build
 
+build-ultra: ## Build with ultra-minimal Dockerfile (curl + zip only)
+	@echo "Building with ultra-minimal Dockerfile..."
+	docker-compose -f docker-compose.ultra.yml build
+
 up: ## Start containers in detached mode
 	@echo "Starting containers..."
 	docker-compose up -d
@@ -35,6 +39,11 @@ up-simple: ## Start with simplified build (for build issues)
 up-minimal: ## Start with minimal build (essential extensions only)
 	@echo "Starting containers with minimal build..."
 	docker-compose -f docker-compose.minimal.yml up -d
+	@echo "Containers started! Visit http://localhost:8080"
+
+up-ultra: ## Start with ultra-minimal build (curl + zip only)
+	@echo "Starting containers with ultra-minimal build..."
+	docker-compose -f docker-compose.ultra.yml up -d
 	@echo "Containers started! Visit http://localhost:8080"
 
 up-dev: ## Start development containers with Xdebug
