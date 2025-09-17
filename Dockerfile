@@ -1,21 +1,35 @@
 # Multi-stage build for production and development
-FROM php:8.1-apache as base
+FROM php:8.1-apache AS base
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
+# Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    libcurl4-openssl-dev \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
-    libzip-dev \
+    pkg-config \
+    ca-certificates \
+    && docker-php-ext-configure curl \
     && docker-php-ext-configure zip \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip curl json
+    && docker-php-ext-install \
+        curl \
+        json \
+        mbstring \
+        zip \
+        gd \
+        bcmath \
+        exif \
+        pcntl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -39,7 +53,7 @@ COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Production stage
-FROM base as production
+FROM base AS production
 
 # Copy composer files first to leverage Docker cache
 COPY composer.json composer.lock* ./
@@ -68,7 +82,7 @@ ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
 
 # Development stage
-FROM base as development
+FROM base AS development
 
 # Install Xdebug for development
 RUN pecl install xdebug \

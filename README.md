@@ -27,6 +27,17 @@ docker-compose up -d
 ./examples/docker_run_examples.sh basic
 ```
 
+**If you encounter build issues (libcurl errors)**, use the simplified build:
+
+```bash
+# Alternative: Use simplified Docker setup
+docker-compose -f docker-compose.simple.yml up -d
+
+# Or use Makefile
+make build-simple
+make up-simple
+```
+
 ## Requirements
 
 - **Docker & Docker Compose** (recommended)
@@ -319,7 +330,25 @@ mt5-manager-api/
 
 ## 🐛 Troubleshooting
 
-### Docker Issues
+### Docker Build Issues
+
+**libcurl error (Package requirements not met):**
+If you encounter curl/libcurl build errors, use the simplified Dockerfile:
+```bash
+# Use simplified build
+docker-compose -f docker-compose.simple.yml build
+docker-compose -f docker-compose.simple.yml up -d
+```
+
+**Multi-stage build issues:**
+Some Docker environments have issues with multi-stage builds. The simplified version avoids this:
+```bash
+# Alternative: Build with simple Dockerfile directly
+docker build -f Dockerfile.simple -t mt5-manager-api .
+docker run -p 8080:80 mt5-manager-api
+```
+
+### Docker Runtime Issues
 
 **Containers won't start:**
 ```bash
@@ -337,6 +366,14 @@ docker-compose down && docker-compose up -d
 ```bash
 # Fix permissions
 docker-compose exec mt5-sdk chown -R www-data:www-data /var/www/html
+```
+
+**Build cache issues:**
+```bash
+# Clear build cache and rebuild
+docker-compose build --no-cache
+# Or with simple version
+docker-compose -f docker-compose.simple.yml build --no-cache
 ```
 
 ### API Connection Issues

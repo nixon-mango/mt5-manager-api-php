@@ -14,9 +14,18 @@ build: ## Build Docker images
 	@echo "Building Docker images..."
 	docker-compose build
 
+build-simple: ## Build with simplified Dockerfile (for build issues)
+	@echo "Building with simplified Dockerfile..."
+	docker-compose -f docker-compose.simple.yml build
+
 up: ## Start containers in detached mode
 	@echo "Starting containers..."
 	docker-compose up -d
+	@echo "Containers started! Visit http://localhost:8080"
+
+up-simple: ## Start with simplified build (for build issues)
+	@echo "Starting containers with simplified build..."
+	docker-compose -f docker-compose.simple.yml up -d
 	@echo "Containers started! Visit http://localhost:8080"
 
 up-dev: ## Start development containers with Xdebug
