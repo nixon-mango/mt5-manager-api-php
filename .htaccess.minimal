@@ -1,4 +1,4 @@
-# Minimal Apache Configuration - Works without additional modules
+# Minimal Apache Configuration - No modules required
 
 # Set default files
 DirectoryIndex index.php index.html

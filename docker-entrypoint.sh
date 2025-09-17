@@ -4,6 +4,10 @@ set -e
 # Docker entrypoint script for MT5 Manager API
 echo "Starting MT5 Manager API container..."
 
+# Enable Apache modules if available
+echo "Enabling Apache modules..."
+a2enmod rewrite headers expires deflate 2>/dev/null || echo "Some modules may not be available"
+
 # Create necessary directories
 mkdir -p /var/www/html/logs
 mkdir -p /var/www/html/tmp
