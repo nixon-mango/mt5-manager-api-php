@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  mt5-sdk:
+    build: .
+    container_name: mt5-manager-api
+    ports:
+      - "8080:80"
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_MAX_EXECUTION_TIME=300
+      - MT5_API_HOST=${MT5_API_HOST:-localhost}
+      - MT5_API_PORT=${MT5_API_PORT:-8080}
+      - MT5_API_USERNAME=${MT5_API_USERNAME:-}
+      - MT5_API_PASSWORD=${MT5_API_PASSWORD:-}
+    volumes:
+      - ./examples:/var/www/html/examples
+      - ./logs:/var/www/html/logs
+    networks:
+      - mt5-network
+    restart: unless-stopped
+
+  # Optional: Add a development environment with mounted source code
+  mt5-sdk-dev:
+    build: 
+      context: .
+      target: development
+    container_name: mt5-manager-api-dev
+    ports:
+      - "8081:80"
+    environment:
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_MAX_EXECUTION_TIME=0
+      - XDEBUG_MODE=debug
+      - XDEBUG_CONFIG=client_host=host.docker.internal
+      - MT5_API_HOST=${MT5_API_HOST:-localhost}
+      - MT5_API_PORT=${MT5_API_PORT:-8080}
+      - MT5_API_USERNAME=${MT5_API_USERNAME:-}
+      - MT5_API_PASSWORD=${MT5_API_PASSWORD:-}
+    volumes:
+      - .:/var/www/html
+      - ./logs:/var/www/html/logs
+    networks:
+      - mt5-network
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  mt5-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

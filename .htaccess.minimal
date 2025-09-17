@@ -1,0 +1,7 @@
+# Minimal Apache Configuration - No modules required
+
+# Set default files
+DirectoryIndex index.php index.html
+
+# Set charset
+AddDefaultCharset UTF-8

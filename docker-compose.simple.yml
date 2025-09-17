@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mt5-sdk:
+    build:
+      context: .
+      dockerfile: Dockerfile.simple
+    container_name: mt5-manager-api
+    ports:
+      - "8080:80"
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+      - PHP_MAX_EXECUTION_TIME=300
+      - MT5_API_HOST=${MT5_API_HOST:-localhost}
+      - MT5_API_PORT=${MT5_API_PORT:-8080}
+      - MT5_API_USERNAME=${MT5_API_USERNAME:-}
+      - MT5_API_PASSWORD=${MT5_API_PASSWORD:-}
+    volumes:
+      - ./examples:/var/www/html/examples
+      - ./logs:/var/www/html/logs
+    networks:
+      - mt5-network
+    restart: unless-stopped
+
+networks:
+  mt5-network:
+    driver: bridge
+
+volumes:
+  logs:
+    driver: local

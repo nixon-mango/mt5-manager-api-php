@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+docs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test files (keep for development, exclude for production)
+test/
+tests/
+phpunit.xml.dist
+
+# Vendor directory (will be installed during build)
+vendor/
+
+# Composer lock file (copied separately for caching)
+composer.lock
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Build artifacts
+build/
+dist/
