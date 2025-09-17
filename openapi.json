@@ -1,0 +1,701 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MT5 Manager API",
+    "description": "MetaTrader 5 REST API for managing trading accounts, users, and operations. Call /init/ to get authentication token, which is required for other methods.",
+    "version": "0.0.3-oas3",
+    "contact": {
+      "email": "mikha.dev@gmail.com"
+    },
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/v1",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "https://your-mt5-server.com/v1",
+      "description": "Production MT5 Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token obtained from /init/ endpoint"
+      }
+    },
+    "schemas": {
+      "Account": {
+        "type": "object",
+        "properties": {
+          "login": { "type": "integer", "example": 12345 },
+          "balance": { "type": "number", "format": "double", "example": 1000.50 },
+          "equity": { "type": "number", "format": "double", "example": 1015.25 },
+          "margin": { "type": "number", "format": "double", "example": 100.00 },
+          "free_margin": { "type": "number", "format": "double", "example": 915.25 },
+          "margin_level": { "type": "number", "format": "double", "example": 1015.25 }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "login": { "type": "integer", "example": 12345 },
+          "name": { "type": "string", "example": "John Doe" },
+          "email": { "type": "string", "format": "email", "example": "john@example.com" },
+          "group": { "type": "string", "example": "demo" },
+          "phone": { "type": "string", "example": "+1234567890" },
+          "country": { "type": "string", "example": "US" },
+          "state": { "type": "string", "example": "NY" },
+          "city": { "type": "string", "example": "New York" },
+          "address": { "type": "string", "example": "123 Main St" },
+          "zip_code": { "type": "string", "example": "10001" }
+        },
+        "required": ["login", "name", "email", "group"]
+      },
+      "Position": {
+        "type": "object",
+        "properties": {
+          "position": { "type": "integer", "example": 123456 },
+          "symbol": { "type": "string", "example": "EURUSD" },
+          "volume": { "type": "number", "format": "double", "example": 1.0 },
+          "type": { "type": "string", "enum": ["buy", "sell"], "example": "buy" },
+          "price_open": { "type": "number", "format": "double", "example": 1.1850 },
+          "price_current": { "type": "number", "format": "double", "example": 1.1865 },
+          "profit": { "type": "number", "format": "double", "example": 15.50 },
+          "swap": { "type": "number", "format": "double", "example": -0.25 },
+          "commission": { "type": "number", "format": "double", "example": -2.00 }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "order": { "type": "integer", "example": 789012 },
+          "symbol": { "type": "string", "example": "EURUSD" },
+          "volume": { "type": "number", "format": "double", "example": 1.0 },
+          "type": { "type": "string", "enum": ["buy_limit", "sell_limit", "buy_stop", "sell_stop"], "example": "buy_limit" },
+          "price_open": { "type": "number", "format": "double", "example": 1.1800 },
+          "price_sl": { "type": "number", "format": "double", "example": 1.1750 },
+          "price_tp": { "type": "number", "format": "double", "example": 1.1900 }
+        }
+      },
+      "Symbol": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string", "example": "EURUSD" },
+          "description": { "type": "string", "example": "Euro vs US Dollar" },
+          "digits": { "type": "integer", "example": 5 },
+          "spread": { "type": "integer", "example": 2 },
+          "point": { "type": "number", "format": "double", "example": 0.00001 }
+        }
+      },
+      "BalanceOperation": {
+        "type": "object",
+        "properties": {
+          "login": { "type": "string", "example": "12345" },
+          "type": { "type": "string", "enum": ["DEAL_BONUS", "DEAL_DEPOSIT", "DEAL_WITHDRAWAL"], "example": "DEAL_DEPOSIT" },
+          "balance": { "type": "number", "format": "double", "example": 100.00 },
+          "comment": { "type": "string", "example": "Deposit via API" }
+        },
+        "required": ["login", "balance"]
+      },
+      "InitResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." },
+          "status": { "type": "string", "example": "success" },
+          "expires_in": { "type": "integer", "example": 3600 }
+        }
+      },
+      "ApiResponse": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "success" },
+          "message": { "type": "string", "example": "Operation completed successfully" },
+          "data": { "type": "object" }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/init/": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Initialize manager connection",
+        "description": "Get authentication token for API access. This endpoint does not require authentication.",
+        "security": [],
+        "parameters": [
+          {
+            "name": "server",
+            "in": "query",
+            "description": "MetaTrader5 server IP with port",
+            "schema": { "type": "string", "example": "127.0.0.1:443" }
+          },
+          {
+            "name": "login",
+            "in": "query",
+            "description": "MetaTrader manager login",
+            "schema": { "type": "string", "example": "manager_login" }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "description": "MetaTrader manager password",
+            "schema": { "type": "string", "example": "manager_password" }
+          },
+          {
+            "name": "timeout",
+            "in": "query",
+            "description": "Connection timeout in milliseconds",
+            "schema": { "type": "number", "example": 5000 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful authentication",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/InitResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ping/": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Ping API",
+        "description": "Test API connectivity and authentication",
+        "responses": {
+          "200": {
+            "description": "API is responsive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "ok" },
+                    "timestamp": { "type": "string", "format": "date-time" },
+                    "version": { "type": "string", "example": "0.0.3-oas3" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/{login}": {
+      "get": {
+        "tags": ["Account Management"],
+        "summary": "Get account by login",
+        "description": "Retrieve account information for a specific login",
+        "parameters": [
+          {
+            "name": "login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account information",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Account" }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{user_login}": {
+      "get": {
+        "tags": ["User Management"],
+        "summary": "Get user by login",
+        "description": "Retrieve user information for a specific login",
+        "parameters": [
+          {
+            "name": "user_login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User information",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["User Management"],
+        "summary": "Delete user",
+        "description": "Delete a user account",
+        "parameters": [
+          {
+            "name": "user_login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID to delete",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/add": {
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Create new user",
+        "description": "Create a new user account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  { "$ref": "#/components/schemas/User" },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "password": { "type": "string", "example": "SecurePass123!" }
+                    },
+                    "required": ["password"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid user data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/update": {
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Update user",
+        "description": "Update existing user information",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/deposit": {
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Deposit to user account",
+        "description": "Add funds to a user's account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BalanceOperation" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deposit successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/withdraw": {
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Withdraw from user account",
+        "description": "Remove funds from a user's account",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BalanceOperation" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawal successful",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{group}": {
+      "get": {
+        "tags": ["User Management"],
+        "summary": "Get users by group",
+        "description": "Retrieve all users in a specific group",
+        "parameters": [
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "description": "Group name",
+            "schema": { "type": "string", "example": "demo" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users in the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/positions/{user_login}": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "Get user positions",
+        "description": "Retrieve all open positions for a user",
+        "parameters": [
+          {
+            "name": "user_login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user positions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Position" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/{user_login}": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "Get user orders",
+        "description": "Retrieve all pending orders for a user",
+        "parameters": [
+          {
+            "name": "user_login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Order" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deals/{user_login}": {
+      "get": {
+        "tags": ["Trading"],
+        "summary": "Get user deals",
+        "description": "Retrieve trading history for a user",
+        "parameters": [
+          {
+            "name": "user_login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user deals/trades",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deal": { "type": "integer", "example": 345678 },
+                      "symbol": { "type": "string", "example": "EURUSD" },
+                      "volume": { "type": "number", "format": "double", "example": 1.0 },
+                      "type": { "type": "string", "example": "buy" },
+                      "profit": { "type": "number", "format": "double", "example": 15.50 },
+                      "time": { "type": "string", "format": "date-time" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/close_all/{user_login}": {
+      "delete": {
+        "tags": ["Trading"],
+        "summary": "Close all user positions",
+        "description": "Close all open positions for a user",
+        "parameters": [
+          {
+            "name": "user_login",
+            "in": "path",
+            "required": true,
+            "description": "User login ID",
+            "schema": { "type": "string", "example": "12345" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All positions closed successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/symbols/": {
+      "get": {
+        "tags": ["Market Data"],
+        "summary": "Get trading symbols",
+        "description": "Retrieve list of available trading symbols",
+        "responses": {
+          "200": {
+            "description": "List of available trading symbols",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Symbol" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/": {
+      "get": {
+        "tags": ["Group Management"],
+        "summary": "Get list of groups",
+        "description": "Retrieve all available user groups",
+        "responses": {
+          "200": {
+            "description": "List of user groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "group": { "type": "string", "example": "demo" },
+                      "description": { "type": "string", "example": "Demo accounts" },
+                      "currency": { "type": "string", "example": "USD" },
+                      "leverage": { "type": "integer", "example": 100 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{group_name}": {
+      "get": {
+        "tags": ["Group Management"],
+        "summary": "Get group by name",
+        "description": "Retrieve specific group information",
+        "parameters": [
+          {
+            "name": "group_name",
+            "in": "path",
+            "required": true,
+            "description": "Group name",
+            "schema": { "type": "string", "example": "demo" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group": { "type": "string", "example": "demo" },
+                    "description": { "type": "string", "example": "Demo accounts" },
+                    "currency": { "type": "string", "example": "USD" },
+                    "leverage": { "type": "integer", "example": 100 },
+                    "margin_call": { "type": "number", "example": 80.0 },
+                    "margin_stop": { "type": "number", "example": 50.0 }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ApiResponse" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication and authorization endpoints"
+    },
+    {
+      "name": "Health",
+      "description": "API health and status endpoints"
+    },
+    {
+      "name": "Account Management",
+      "description": "Account information and management"
+    },
+    {
+      "name": "User Management",
+      "description": "User creation, modification, and management"
+    },
+    {
+      "name": "Trading",
+      "description": "Trading operations, positions, and orders"
+    },
+    {
+      "name": "Market Data",
+      "description": "Market symbols and trading instruments"
+    },
+    {
+      "name": "Group Management",
+      "description": "User group configuration and management"
+    }
+  ]
+}

@@ -218,10 +218,13 @@ $config->setAccessToken($token);<br>
         
         <p>Complete API documentation is available in multiple formats:</p>
         <ul>
+            <li><a href="swagger-ui.php">🚀 Swagger Playground</a> - Full-featured interactive API testing (requires internet)</li>
+            <li><a href="api-tester.php">🧪 Simple API Tester</a> - Lightweight API testing tool (works offline)</li>
             <li><a href="api-docs.php">📚 API Endpoints</a> - All available API methods (formatted)</li>
             <li><a href="model-docs.php">📊 Data Models</a> - Request/response object structures (formatted)</li>
             <li><a href="docs-browser.php">📁 Raw Documentation</a> - Browse original markdown files</li>
             <li><a href="examples/README.md">📖 Examples Documentation</a> - Detailed example usage</li>
+            <li><a href="openapi.json">📄 OpenAPI Spec</a> - Machine-readable API specification</li>
         </ul>
         
         <h2>🔗 Useful Links</h2>
