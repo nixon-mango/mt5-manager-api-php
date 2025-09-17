@@ -84,8 +84,8 @@
         <h1>📁 Documentation Browser</h1>
         
         <?php
-        $file = $_GET['file'] ?? '';
-        $type = $_GET['type'] ?? 'api';
+        $file = isset($_GET['file']) ? $_GET['file'] : '';
+        $type = isset($_GET['type']) ? $_GET['type'] : 'api';
         
         if (!empty($file)) {
             // Display specific file
@@ -107,39 +107,20 @@
                 echo '<a href="docs-browser.php">← Back to File List</a>';
             }
         } else {
-            // Display file list
+            // Display simple file list
             echo '<p>Browse the raw documentation files:</p>';
             
             echo '<h2>🔌 API Endpoints</h2>';
             echo '<div class="file-list">';
             
-            $apiFiles = glob(__DIR__ . '/docs/Api/*.md');
-            foreach ($apiFiles as $file) {
-                $filename = basename($file);
-                $title = basename($file, '.md');
-                
+            $apiFiles = ['AccountApi.md', 'BasicApi.md', 'GroupApi.md', 'OrderApi.md', 'SymbolApi.md', 'TradeApi.md', 'UserApi.md'];
+            
+            foreach ($apiFiles as $filename) {
+                $title = basename($filename, '.md');
                 echo '<div class="file-card">';
                 echo '<h3>' . htmlspecialchars($title) . '</h3>';
                 echo '<p><a href="?file=' . urlencode($filename) . '&type=api">View Raw Markdown</a></p>';
-                
-                // Get first few lines for preview
-                $content = file_get_contents($file);
-                $lines = explode("\n", $content);
-                $preview = '';
-                $lineCount = 0;
-                foreach ($lines as $line) {
-                    if ($lineCount >= 5) break;
-                    if (!empty(trim($line)) && strpos($line, '#') !== 0) {
-                        $preview .= trim($line) . ' ';
-                        $lineCount++;
-                    }
-                }
-                
-                if (strlen($preview) > 150) {
-                    $preview = substr($preview, 0, 150) . '...';
-                }
-                
-                echo '<p style="font-size: 0.9em; color: #666;">' . htmlspecialchars($preview) . '</p>';
+                echo '<p style="font-size: 0.9em; color: #666;">API endpoint documentation</p>';
                 echo '</div>';
             }
             echo '</div>';
@@ -147,24 +128,14 @@
             echo '<h2>📊 Data Models</h2>';
             echo '<div class="file-list">';
             
-            $modelFiles = glob(__DIR__ . '/docs/Model/*.md');
-            foreach ($modelFiles as $file) {
-                $filename = basename($file);
-                $title = basename($file, '.md');
-                
+            $modelFiles = ['Account.md', 'User.md', 'Position.md', 'Order.md', 'Deal.md', 'Symbol.md', 'Group.md', 'InitReturnType.md', 'PingReturnType.md'];
+            
+            foreach ($modelFiles as $filename) {
+                $title = basename($filename, '.md');
                 echo '<div class="file-card">';
                 echo '<h3>' . htmlspecialchars($title) . '</h3>';
                 echo '<p><a href="?file=' . urlencode($filename) . '&type=model">View Raw Markdown</a></p>';
-                
-                // Get model description
-                $content = file_get_contents($file);
-                if (preg_match('/## Properties/i', $content)) {
-                    $propertiesCount = substr_count($content, '### ');
-                    echo '<p style="font-size: 0.9em; color: #666;">' . $propertiesCount . ' properties defined</p>';
-                } else {
-                    echo '<p style="font-size: 0.9em; color: #666;">Data model structure</p>';
-                }
-                
+                echo '<p style="font-size: 0.9em; color: #666;">Data model structure</p>';
                 echo '</div>';
             }
             echo '</div>';

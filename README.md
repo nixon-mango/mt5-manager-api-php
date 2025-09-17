@@ -481,7 +481,7 @@ $config->setAccessToken($token);
 - **Email**: mikha.dev@gmail.com
 - **Repository**: [GitHub](https://github.com/dev4traders/mt5-manager-api)
 - **Issues**: [GitHub Issues](https://github.com/dev4traders/mt5-manager-api/issues)
-- **Documentation**: [API Docs](docs/)
+- **Documentation**: [API Docs](http://localhost:8080/api-docs.php)
 
 ## 📄 License
 

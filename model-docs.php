@@ -116,86 +116,36 @@
         <p>These are the data structures used in API requests and responses.</p>
         
         <?php
-        $docsDir = __DIR__ . '/docs/Model/';
-        $modelFiles = glob($docsDir . '*.md');
+        // Simple model documentation display
+        $models = [
+            'Account' => ['description' => 'User account information with balance, equity, margin details'],
+            'User' => ['description' => 'User profile data including personal info and settings'],
+            'Position' => ['description' => 'Open trading position with symbol, volume, profit/loss'],
+            'Order' => ['description' => 'Pending order with price levels and execution conditions'],
+            'Deal' => ['description' => 'Historical trade record with timestamps and results'],
+            'Symbol' => ['description' => 'Trading instrument with spreads and specifications'],
+            'Group' => ['description' => 'User group configuration and permissions'],
+            'InitReturnType' => ['description' => 'Response from initialization endpoint with token'],
+            'PingReturnType' => ['description' => 'Response from ping endpoint with status'],
+            'ReturnType' => ['description' => 'Generic API response structure'],
+            'BalanceType' => ['description' => 'Balance operation data for deposits/withdrawals'],
+            'ResetPwdType' => ['description' => 'Password reset request structure'],
+            'UserReturnType' => ['description' => 'User operation response with result data'],
+            'UserReturnTypeUser' => ['description' => 'User data within user operation response'],
+            'CachedLogins' => ['description' => 'Cached login information'],
+            'SymbolTradeSessions' => ['description' => 'Symbol trading session configuration']
+        ];
         
-        $models = [];
-        
-        foreach ($modelFiles as $file) {
-            $filename = basename($file, '.md');
-            $content = file_get_contents($file);
-            
-            // Parse the markdown content
-            $lines = explode("\n", $content);
-            $title = '';
-            $properties = [];
-            
-            $inPropertiesSection = false;
-            
-            foreach ($lines as $line) {
-                $line = trim($line);
-                
-                if (strpos($line, '# ') === 0) {
-                    $title = substr($line, 2);
-                } elseif (strpos($line, '## Properties') === 0) {
-                    $inPropertiesSection = true;
-                    continue;
-                } elseif ($inPropertiesSection && strpos($line, '### ') === 0) {
-                    // Property name
-                    $propName = substr($line, 4);
-                    $properties[] = ['name' => $propName, 'details' => ''];
-                } elseif ($inPropertiesSection && !empty($properties) && !empty($line) && strpos($line, '#') !== 0) {
-                    // Property details
-                    $lastIndex = count($properties) - 1;
-                    if (isset($properties[$lastIndex])) {
-                        $properties[$lastIndex]['details'] .= $line . "\n";
-                    }
-                }
-            }
-            
-            if (!empty($title)) {
-                $models[] = [
-                    'name' => $title,
-                    'filename' => $filename,
-                    'properties' => $properties
-                ];
-            }
-        }
-        
-        // Sort models alphabetically
-        usort($models, function($a, $b) {
-            return strcmp($a['name'], $b['name']);
-        });
-        
-        // Display models in a grid
         echo '<div class="model-grid">';
-        foreach ($models as $model) {
+        foreach ($models as $modelName => $modelData) {
             echo '<div class="model-card">';
-            echo '<h3>' . htmlspecialchars($model['name']) . '</h3>';
+            echo '<h3>' . htmlspecialchars($modelName) . '</h3>';
+            echo '<p>' . htmlspecialchars($modelData['description']) . '</p>';
             
-            if (!empty($model['properties'])) {
-                echo '<p><strong>Properties:</strong></p>';
-                foreach (array_slice($model['properties'], 0, 5) as $property) {
-                    $details = trim($property['details']);
-                    echo '<div style="font-size: 0.9em; margin: 5px 0;">';
-                    echo '<code>' . htmlspecialchars($property['name']) . '</code>';
-                    if (!empty($details)) {
-                        $firstLine = explode("\n", $details)[0];
-                        if (strlen($firstLine) > 50) {
-                            $firstLine = substr($firstLine, 0, 50) . '...';
-                        }
-                        echo ' - ' . htmlspecialchars($firstLine);
-                    }
-                    echo '</div>';
-                }
-                
-                if (count($model['properties']) > 5) {
-                    echo '<div style="font-size: 0.9em; color: #666; margin-top: 5px;">';
-                    echo '... and ' . (count($model['properties']) - 5) . ' more properties';
-                    echo '</div>';
-                }
-            } else {
-                echo '<p style="color: #666; font-style: italic;">No properties documented</p>';
+            // Check if actual file exists
+            $modelFile = __DIR__ . '/docs/Model/' . $modelName . '.md';
+            if (file_exists($modelFile)) {
+                echo '<p><a href="docs-browser.php?file=' . urlencode($modelName . '.md') . '&type=model">View Details</a></p>';
             }
             
             echo '</div>';

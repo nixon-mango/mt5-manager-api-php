@@ -102,95 +102,75 @@
         <p>All URIs are relative to <code>/v1</code> base path.</p>
         
         <?php
-        $docsDir = __DIR__ . '/docs/Api/';
-        $apiFiles = glob($docsDir . '*.md');
+        // Simple API documentation display
+        $apiEndpoints = [
+            'BasicApi' => [
+                'title' => 'Basic API Operations',
+                'methods' => [
+                    ['name' => 'initGet', 'http' => 'GET /init/', 'description' => 'Initialize manager connection and get authentication token'],
+                    ['name' => 'pingGet', 'http' => 'GET /ping/', 'description' => 'Test API connectivity']
+                ]
+            ],
+            'AccountApi' => [
+                'title' => 'Account Management',
+                'methods' => [
+                    ['name' => 'accountLoginGet', 'http' => 'GET /account/{login}', 'description' => 'Get account information by login']
+                ]
+            ],
+            'UserApi' => [
+                'title' => 'User Management',
+                'methods' => [
+                    ['name' => 'userUserLoginGet', 'http' => 'GET /user/{user_login}', 'description' => 'Get user by login'],
+                    ['name' => 'userAddPost', 'http' => 'POST /user/add', 'description' => 'Create new user'],
+                    ['name' => 'updateUser', 'http' => 'POST /user/update', 'description' => 'Update existing user'],
+                    ['name' => 'userUserLoginDelete', 'http' => 'DELETE /user/{user_login}', 'description' => 'Delete user'],
+                    ['name' => 'userDepositPost', 'http' => 'POST /user/deposit', 'description' => 'Deposit to user account'],
+                    ['name' => 'userWithdrawPost', 'http' => 'POST /user/withdraw', 'description' => 'Withdraw from user account'],
+                    ['name' => 'usersGroupGet', 'http' => 'GET /users/{group}', 'description' => 'Get users by group'],
+                    ['name' => 'userResetPwdPost', 'http' => 'POST /user/reset_pwd', 'description' => 'Reset user password']
+                ]
+            ],
+            'TradeApi' => [
+                'title' => 'Trading Operations',
+                'methods' => [
+                    ['name' => 'positionsUserLoginGet', 'http' => 'GET /positions/{user_login}', 'description' => 'Get user positions'],
+                    ['name' => 'ordersUserLoginGet', 'http' => 'GET /orders/{user_login}', 'description' => 'Get user orders'],
+                    ['name' => 'dealsUserLoginGet', 'http' => 'GET /deals/{user_login}', 'description' => 'Get user deals/trades'],
+                    ['name' => 'closeAllUserLoginDelete', 'http' => 'DELETE /close_all/{user_login}', 'description' => 'Close all user positions']
+                ]
+            ],
+            'GroupApi' => [
+                'title' => 'Group Management',
+                'methods' => [
+                    ['name' => 'groupsGet', 'http' => 'GET /groups/', 'description' => 'Get list of groups'],
+                    ['name' => 'groupGroupNameGet', 'http' => 'GET /group/{group_name}', 'description' => 'Get group by name']
+                ]
+            ],
+            'SymbolApi' => [
+                'title' => 'Symbol/Market Data',
+                'methods' => [
+                    ['name' => 'symbolsGet', 'http' => 'GET /symbols/', 'description' => 'Get list of trading symbols']
+                ]
+            ]
+        ];
         
-        foreach ($apiFiles as $file) {
-            $filename = basename($file, '.md');
-            $content = file_get_contents($file);
+        foreach ($apiEndpoints as $apiName => $apiData) {
+            echo '<div class="api-section">';
+            echo '<h2>' . htmlspecialchars($apiData['title']) . '</h2>';
             
-            // Parse the markdown content
-            $lines = explode("\n", $content);
-            $title = '';
-            $description = '';
-            $methods = [];
-            
-            $inMethodTable = false;
-            $currentMethod = '';
-            $currentExample = '';
-            $inExample = false;
-            
-            foreach ($lines as $line) {
-                $line = trim($line);
+            foreach ($apiData['methods'] as $method) {
+                $httpParts = explode(' ', $method['http']);
+                $httpMethod = strtolower(trim($httpParts[0]));
+                $endpoint = isset($httpParts[1]) ? $httpParts[1] : '';
                 
-                if (strpos($line, '# ') === 0) {
-                    $title = substr($line, 2);
-                } elseif (strpos($line, 'Method | HTTP request | Description') !== false) {
-                    $inMethodTable = true;
-                    continue;
-                } elseif ($inMethodTable && strpos($line, '|') !== false && !empty(trim($line, '|-'))) {
-                    $parts = array_map('trim', explode('|', $line));
-                    if (count($parts) >= 4) {
-                        $methodName = trim($parts[1], '[]()');
-                        $httpMethod = trim($parts[2], '*');
-                        $methodDesc = trim($parts[3]);
-                        
-                        if (!empty($methodName) && !empty($httpMethod)) {
-                            $methods[] = [
-                                'name' => $methodName,
-                                'http' => $httpMethod,
-                                'description' => $methodDesc
-                            ];
-                        }
-                    }
-                } elseif (strpos($line, '# **') === 0) {
-                    $inMethodTable = false;
-                    $currentMethod = trim($line, '# *');
-                } elseif (strpos($line, '```php') === 0) {
-                    $inExample = true;
-                    $currentExample = '';
-                } elseif (strpos($line, '```') === 0 && $inExample) {
-                    $inExample = false;
-                    if (!empty($currentMethod) && !empty($currentExample)) {
-                        // Find the method in our array and add the example
-                        foreach ($methods as &$method) {
-                            if ($method['name'] === $currentMethod) {
-                                $method['example'] = $currentExample;
-                                break;
-                            }
-                        }
-                    }
-                } elseif ($inExample) {
-                    $currentExample .= $line . "\n";
-                }
-            }
-            
-            if (!empty($title) && !empty($methods)) {
-                echo '<div class="api-section">';
-                echo '<h2>' . htmlspecialchars($title) . '</h2>';
-                
-                foreach ($methods as $method) {
-                    $httpParts = explode(' ', $method['http']);
-                    $httpMethod = strtolower(trim($httpParts[0], '*'));
-                    $endpoint = isset($httpParts[1]) ? $httpParts[1] : '';
-                    
-                    echo '<div class="endpoint">';
-                    echo '<span class="method ' . $httpMethod . '">' . strtoupper($httpMethod) . '</span>';
-                    echo '<strong>' . htmlspecialchars($endpoint) . '</strong>';
-                    echo '<p>' . htmlspecialchars($method['description']) . '</p>';
-                    
-                    if (!empty($method['example'])) {
-                        echo '<details>';
-                        echo '<summary>Show Example Code</summary>';
-                        echo '<div class="code"><pre>' . htmlspecialchars($method['example']) . '</pre></div>';
-                        echo '</details>';
-                    }
-                    
-                    echo '</div>';
-                }
-                
+                echo '<div class="endpoint">';
+                echo '<span class="method ' . $httpMethod . '">' . strtoupper($httpMethod) . '</span>';
+                echo '<strong>' . htmlspecialchars($endpoint) . '</strong>';
+                echo '<p>' . htmlspecialchars($method['description']) . '</p>';
                 echo '</div>';
             }
+            
+            echo '</div>';
         }
         ?>
         
